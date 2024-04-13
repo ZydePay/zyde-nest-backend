@@ -6,9 +6,14 @@ export class CreateTransferDto {
 
   @IsNotEmpty()
   amount: number;
+
+  @IsNotEmpty()
+  privateKey: string;
+
 }
 
 export type CreateTransferType = {
   receipient: string;
   amount: number;
+  privateKey: string;
 };

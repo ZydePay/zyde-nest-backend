@@ -10,18 +10,17 @@ export class BiconomyTransferUsingEther {
     private configService: ConfigService,
     private arcTransfer: AarcTransfer,
   ) {}
-  
-  privateKey = this.configService.get('PRIVATE_KEY');
+
   alchemyMainnetRPC = this.configService.get('ALCHEMY_MAINNET_URL');
   biconomyPaymasterApiKey = this.configService.get('BICONOMY_API_KEY');
   bundlerUrl = this.configService.get('BICONOMY_POLYGON_MAINNET_BUNDLER'); // Found at https://dashboard.biconomy.io
   USDCTokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // USDC Proxy address
   zydeContractAddress = '0x581951B3CB2bB1a4e34D706173567caF19931Faa';
 
-  createSmartAccount = async () => {
+  createSmartAccount = async (privateKey: string) => {
     // Your configuration with private key and Biconomy API key
     const config = {
-      privateKey: this.privateKey,
+      privateKey: privateKey,
       biconomyPaymasterApiKey: this.biconomyPaymasterApiKey,
       bundlerUrl: this.bundlerUrl, // <-- Read about this at https://docs.biconomy.io/dashboard#bundler-url
       rpcUrl: this.alchemyMainnetRPC,
@@ -43,7 +42,11 @@ export class BiconomyTransferUsingEther {
     return { smartWallet, saAddress };
   };
 
-  transferUSDC = async (amount: number, receipientAddress: string) => {
+  transferUSDC = async (
+    amount: number,
+    receipientAddress: string,
+    privateKey: string,
+  ) => {
     // amount to approve and transfer
     const transferAmount = amount;
     const fee = (transferAmount * 11) / 1000;
@@ -54,14 +57,15 @@ export class BiconomyTransferUsingEther {
     const approvalAmount = parseUnits(totalApproveAmount.toString(), 6);
 
     // call the create smart contract function to get the smart account address
-    const { smartWallet, saAddress } = await this.createSmartAccount();
+    const { smartWallet, saAddress } =
+      await this.createSmartAccount(privateKey);
 
     // call the gasless transfer to smart account function
     // check gasless transfer to smart account transaction status
     const res = await this.arcTransfer.checkTransactionStatus(
       saAddress,
       amount,
-      this.privateKey,
+      privateKey,
       this.alchemyMainnetRPC,
     );
     console.log(res);

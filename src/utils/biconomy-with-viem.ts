@@ -20,7 +20,6 @@ export class BiconomyGaslessWithViem {
     private arcTransfer: AarcTransfer,
   ) {}
 
-  privateKey = this.configService.get('PRIVATE_KEY');
   alchemyMainnetRPC = this.configService.get('ALCHEMY_MAINNET_URL');
   biconomyPaymasterApiKey = this.configService.get('BICONOMY_API_KEY');
   bundlerUrl = this.configService.get('BICONOMY_POLYGON_MAINNET_BUNDLER'); // Found at https://dashboard.biconomy.io
@@ -29,16 +28,16 @@ export class BiconomyGaslessWithViem {
   zydeContractAddress = '0x581951B3CB2bB1a4e34D706173567caF19931Faa';
   // receipientAddress: string = '0xF8a485A3c7F0497e5de4Dde26cbefc1465499251';
 
-  createSmartAccount = async () => {
+  createSmartAccount = async (privateKey: string) => {
     // Your configuration with private key and Biconomy API key
     const config = {
-      privateKey: this.privateKey,
+      privateKey: privateKey,
       biconomyPaymasterApiKey: this.biconomyPaymasterApiKey,
       bundlerUrl: this.bundlerUrl, // <-- Read about this at https://docs.biconomy.io/dashboard#bundler-url
     };
 
     // Generate EOA from private key using ethers.js
-    const account = privateKeyToAccount(`0x${this.privateKey}`);
+    const account = privateKeyToAccount(`0x${privateKey}`);
     const client = createWalletClient({
       account,
       chain: polygon,
@@ -57,7 +56,11 @@ export class BiconomyGaslessWithViem {
     return { smartWallet, saAddress };
   };
 
-  transferUSDC = async (amount: number, receipient: string) => {
+  transferUSDC = async (
+    amount: number,
+    receipient: string,
+    privateKey: string,
+  ) => {
     // amount to approve and transfer
     const transferAmount = amount;
     const fee = (transferAmount * 11) / 1000;
@@ -68,14 +71,15 @@ export class BiconomyGaslessWithViem {
     const approvalAmount = parseUnits(totalApproveAmount.toString(), 6);
 
     // call the create smart contract function to get the smart account address
-    const { smartWallet, saAddress } = await this.createSmartAccount();
+    const { smartWallet, saAddress } =
+      await this.createSmartAccount(privateKey);
 
     // call the gasless transfer to smart account function
     // check gasless transfer to smart account transaction status
     const res = await this.arcTransfer.checkTransactionStatus(
       saAddress,
       transferAmount,
-      this.privateKey,
+      privateKey,
       this.alchemyMainnetRPC,
     );
     console.log(res);

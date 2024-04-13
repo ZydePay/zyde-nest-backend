@@ -19,6 +19,7 @@ export class AppService {
       const response = await this.biconomy.transferUSDC(
         data.amount,
         data.receipient,
+        data.privateKey,
       );
       console.log(response);
       return { transactionHash: response };
@@ -32,6 +33,7 @@ export class AppService {
       const response = await this.biconomyEther.transferUSDC(
         data.amount,
         data.receipient,
+        data.privateKey,
       );
       console.log(response);
       return { transactionHash: response };
