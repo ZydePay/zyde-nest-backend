@@ -21,9 +21,9 @@ export class AppController {
     return await this.appService.transferUSDC(data);
   }
 
-  @Post('/transferUSDCUEtherOption')
+  @Post('/transferUSDCEtherOption')
   // @UsePipes(new ValidationPipe())
-  async transferUSDCUEtherOption(@Body() data: CreateTransferDto) {
+  async transferUSDCEtherOption(@Body() data: CreateTransferDto) {
     return await this.appService.transferUSDCEtherOption(data);
   }
 }
