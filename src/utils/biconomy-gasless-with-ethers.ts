@@ -18,28 +18,32 @@ export class BiconomyTransferUsingEther {
   zydeContractAddress = '0x581951B3CB2bB1a4e34D706173567caF19931Faa';
 
   createSmartAccount = async (privateKey: string) => {
-    // Your configuration with private key and Biconomy API key
-    const config = {
-      privateKey: privateKey,
-      biconomyPaymasterApiKey: this.biconomyPaymasterApiKey,
-      bundlerUrl: this.bundlerUrl, // <-- Read about this at https://docs.biconomy.io/dashboard#bundler-url
-      rpcUrl: this.alchemyMainnetRPC,
-    };
+    try {
+      // Your configuration with private key and Biconomy API key
+      const config = {
+        privateKey: privateKey,
+        biconomyPaymasterApiKey: this.biconomyPaymasterApiKey,
+        bundlerUrl: this.bundlerUrl, // <-- Read about this at https://docs.biconomy.io/dashboard#bundler-url
+        rpcUrl: this.alchemyMainnetRPC,
+      };
 
-    // Generate EOA from private key using ethers.js
-    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-    const signer = new ethers.Wallet(config.privateKey, provider);
+      // Generate EOA from private key using ethers.js
+      const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+      const signer = new ethers.Wallet(config.privateKey, provider);
 
-    // Create Biconomy Smart Account instance
-    const smartWallet = await createSmartAccountClient({
-      signer,
-      biconomyPaymasterApiKey: config.biconomyPaymasterApiKey,
-      bundlerUrl: config.bundlerUrl,
-    });
+      // Create Biconomy Smart Account instance
+      const smartWallet = await createSmartAccountClient({
+        signer,
+        biconomyPaymasterApiKey: config.biconomyPaymasterApiKey,
+        bundlerUrl: config.bundlerUrl,
+      });
 
-    const saAddress = await smartWallet.getAccountAddress();
-    console.log('SA Address', saAddress);
-    return { smartWallet, saAddress };
+      const saAddress = await smartWallet.getAccountAddress();
+      console.log('SA Address', saAddress);
+      return { smartWallet, saAddress };
+    } catch (error) {
+      return error;
+    }
   };
 
   transferUSDC = async (
@@ -47,82 +51,86 @@ export class BiconomyTransferUsingEther {
     receipientAddress: string,
     privateKey: string,
   ) => {
-    // amount to approve and transfer
-    const transferAmount = amount;
-    const fee = (transferAmount * 11) / 1000;
-    console.log(fee);
-    const totalApproveAmount = transferAmount + fee;
+    try {
+      // amount to approve and transfer
+      const transferAmount = amount;
+      const fee = (transferAmount * 11) / 1000;
+      console.log(fee);
+      const totalApproveAmount = transferAmount + fee;
 
-    const amountToTransfer = parseUnits(transferAmount.toString(), 6);
-    const approvalAmount = parseUnits(totalApproveAmount.toString(), 6);
+      const amountToTransfer = parseUnits(transferAmount.toString(), 6);
+      const approvalAmount = parseUnits(totalApproveAmount.toString(), 6);
 
-    // call the create smart contract function to get the smart account address
-    const { smartWallet, saAddress } =
-      await this.createSmartAccount(privateKey);
+      // call the create smart contract function to get the smart account address
+      const { smartWallet, saAddress } =
+        await this.createSmartAccount(privateKey);
 
-    // call the gasless transfer to smart account function
-    // check gasless transfer to smart account transaction status
-    const res = await this.arcTransfer.checkTransactionStatus(
-      saAddress,
-      amount,
-      privateKey,
-      this.alchemyMainnetRPC,
-    );
-    console.log(res);
-    if (!(res && res.data && res.data.txStatus === 'CONFIRMED')) {
-      console.log('response from index', res);
-      return console.log(
-        'transaction not yet confirmed, please wait a moment',
-        res,
+      // call the gasless transfer to smart account function
+      // check gasless transfer to smart account transaction status
+      const res = await this.arcTransfer.checkTransactionStatus(
+        saAddress,
+        amount,
+        privateKey,
+        this.alchemyMainnetRPC,
       );
-    } else {
-      // batch transaction
+      console.log(res);
+      if (!(res && res.data && res.data.txStatus === 'CONFIRMED')) {
+        console.log('response from index', res);
+        return console.log(
+          'transaction not yet confirmed, please wait a moment',
+          res,
+        );
+      } else {
+        // batch transaction
 
-      // USDC Approval Transaction
-      const usdcAbi = new ethers.Interface([
-        'function approve(address spender, uint256 amount)',
-      ]);
-      const zydeAbi = new ethers.Interface([
-        'function transferUSDC(address _recipient, uint256 _amount)',
-      ]);
+        // USDC Approval Transaction
+        const usdcAbi = new ethers.Interface([
+          'function approve(address spender, uint256 amount)',
+        ]);
+        const zydeAbi = new ethers.Interface([
+          'function transferUSDC(address _recipient, uint256 _amount)',
+        ]);
 
-      const usdcData = usdcAbi.encodeFunctionData('approve', [
-        this.zydeContractAddress,
-        approvalAmount,
-      ]);
+        const usdcData = usdcAbi.encodeFunctionData('approve', [
+          this.zydeContractAddress,
+          approvalAmount,
+        ]);
 
-      const zydeData = zydeAbi.encodeFunctionData('transferUSDC', [
-        receipientAddress,
-        amountToTransfer,
-      ]);
+        const zydeData = zydeAbi.encodeFunctionData('transferUSDC', [
+          receipientAddress,
+          amountToTransfer,
+        ]);
 
-      // Build the transaction
-      const usdcApprovalTx = {
-        to: this.USDCTokenAddress,
-        data: usdcData,
-      };
+        // Build the transaction
+        const usdcApprovalTx = {
+          to: this.USDCTokenAddress,
+          data: usdcData,
+        };
 
-      // Build the transaction
-      const zydeApprovalTx = {
-        to: this.zydeContractAddress,
-        data: zydeData,
-      };
+        // Build the transaction
+        const zydeApprovalTx = {
+          to: this.zydeContractAddress,
+          data: zydeData,
+        };
 
-      // Send the transaction and get the transaction hash
-      const userOpResponse = await smartWallet.sendTransaction(
-        [usdcApprovalTx, zydeApprovalTx],
-        {
-          paymasterServiceData: { mode: PaymasterMode.SPONSORED },
-        },
-      );
-      const { transactionHash } = await userOpResponse.waitForTxHash();
-      console.log('Transaction Hash', transactionHash);
-      const userOpReceipt = await userOpResponse.wait();
-      if (userOpReceipt.success == 'true') {
-        console.log('UserOp receipt', userOpReceipt);
-        console.log('Transaction receipt', userOpReceipt.receipt);
+        // Send the transaction and get the transaction hash
+        const userOpResponse = await smartWallet.sendTransaction(
+          [usdcApprovalTx, zydeApprovalTx],
+          {
+            paymasterServiceData: { mode: PaymasterMode.SPONSORED },
+          },
+        );
+        const { transactionHash } = await userOpResponse.waitForTxHash();
+        console.log('Transaction Hash', transactionHash);
+        const userOpReceipt = await userOpResponse.wait();
+        if (userOpReceipt.success == 'true') {
+          console.log('UserOp receipt', userOpReceipt);
+          console.log('Transaction receipt', userOpReceipt.receipt);
+        }
+        return transactionHash;
       }
-      return transactionHash;
+    } catch (error) {
+      return error;
     }
   };
 }

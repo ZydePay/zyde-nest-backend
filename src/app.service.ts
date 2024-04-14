@@ -25,6 +25,7 @@ export class AppService {
       return { transactionHash: response };
     } catch (err) {
       console.log(err);
+      return { error: err };
     }
   }
 
@@ -39,6 +40,7 @@ export class AppService {
       return { transactionHash: response };
     } catch (err) {
       console.log(err);
+      return { error: err };
     }
   }
 }

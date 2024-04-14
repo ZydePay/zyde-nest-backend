@@ -52,6 +52,7 @@ export class AarcTransfer {
       return res[0].taskId;
     } catch (error) {
       console.log(error);
+      return error;
     }
   };
 
@@ -61,29 +62,33 @@ export class AarcTransfer {
     privateKey: string,
     alchemyMainnetRPC: string,
   ) => {
-    const taskId = (await this.gaslessTransferToSmartAccount(
-      smartAccountAddress,
-      amount,
-      privateKey,
-      alchemyMainnetRPC,
-    )) as string;
-    let transactionStatus;
-    // Define a function to check transaction status
-    const getStatus: any = async () => {
-      transactionStatus = await this.aarcSDK.getTransactionStatus(taskId);
-      if (
-        transactionStatus.data !== undefined &&
-        transactionStatus.data.txStatus === 'CONFIRMED'
-      ) {
-        // If the transaction is confirmed, return the status
-        console.log('status', transactionStatus);
-        return transactionStatus;
-      } else {
-        // If the transaction is not confirmed, recursively call getStatus
-        return await getStatus();
-      }
-    };
-    // Call the getStatus function
-    return await getStatus();
+    try {
+      const taskId = (await this.gaslessTransferToSmartAccount(
+        smartAccountAddress,
+        amount,
+        privateKey,
+        alchemyMainnetRPC,
+      )) as string;
+      let transactionStatus;
+      // Define a function to check transaction status
+      const getStatus: any = async () => {
+        transactionStatus = await this.aarcSDK.getTransactionStatus(taskId);
+        if (
+          transactionStatus.data !== undefined &&
+          transactionStatus.data.txStatus === 'CONFIRMED'
+        ) {
+          // If the transaction is confirmed, return the status
+          console.log('status', transactionStatus);
+          return transactionStatus;
+        } else {
+          // If the transaction is not confirmed, recursively call getStatus
+          return await getStatus();
+        }
+      };
+      // Call the getStatus function
+      return await getStatus();
+    } catch (error) {
+      return error;
+    }
   };
 }
