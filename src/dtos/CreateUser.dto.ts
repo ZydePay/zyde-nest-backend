@@ -9,7 +9,6 @@ export class CreateTransferDto {
 
   @IsNotEmpty()
   privateKey: string;
-
 }
 
 export type CreateTransferType = {
