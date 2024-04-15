@@ -42,6 +42,7 @@ export class BiconomyTransferUsingEther {
       console.log('SA Address', saAddress);
       return { smartWallet, saAddress };
     } catch (error) {
+      console.log(error);
       return error;
     }
   };
@@ -130,6 +131,7 @@ export class BiconomyTransferUsingEther {
         return transactionHash;
       }
     } catch (error) {
+      console.log(error);
       return error;
     }
   };

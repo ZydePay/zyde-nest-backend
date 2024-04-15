@@ -56,6 +56,7 @@ export class BiconomyGaslessWithViem {
       console.log('SA Address', saAddress);
       return { smartWallet, saAddress };
     } catch (error) {
+      console.log(error);
       return error;
     }
   };
@@ -143,6 +144,7 @@ export class BiconomyGaslessWithViem {
         return transactionHash;
       }
     } catch (error) {
+      console.log(error);
       return error;
     }
   };
