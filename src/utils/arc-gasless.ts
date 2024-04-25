@@ -2,7 +2,6 @@ import { AarcCore } from '@aarc-xyz/core';
 import { ethers, Wallet } from 'ethers';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { Hex } from 'viem';
 
 @Injectable()
 export class AarcTransfer {
