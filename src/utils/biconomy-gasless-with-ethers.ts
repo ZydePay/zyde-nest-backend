@@ -63,73 +63,73 @@ export class BiconomyTransferUsingEther {
       const approvalAmount = parseUnits(totalApproveAmount.toString(), 6);
 
       // call the create smart contract function to get the smart account address
-      const { smartWallet, saAddress } =
-        await this.createSmartAccount(privateKey);
+      const { smartWallet } = await this.createSmartAccount(privateKey);
 
       // call the gasless transfer to smart account function
       // check gasless transfer to smart account transaction status
-      const res = await this.arcTransfer.checkTransactionStatus(
-        saAddress,
-        amount,
-        privateKey,
-        this.alchemyMainnetRPC,
+      // const res = await this.arcTransfer.checkTransactionStatus(
+      //   saAddress,
+      //   amount,
+      //   privateKey,
+      //   this.alchemyMainnetRPC,
+      // );
+
+      // console.log(res);
+      // if (!(res && res.data && res.data.txStatus === 'CONFIRMED')) {
+      //   console.log('response from index', res);
+      //   return console.log(
+      //     'transaction not yet confirmed, please wait a moment',
+      //     res,
+      //   );
+      // } else {
+      // batch transaction
+
+      // USDC Approval Transaction
+      const usdcAbi = new ethers.Interface([
+        'function approve(address spender, uint256 amount)',
+      ]);
+      const zydeAbi = new ethers.Interface([
+        'function transferUSDC(address _recipient, uint256 _amount)',
+      ]);
+
+      const usdcData = usdcAbi.encodeFunctionData('approve', [
+        this.zydeContractAddress,
+        approvalAmount,
+      ]);
+
+      const zydeData = zydeAbi.encodeFunctionData('transferUSDC', [
+        receipientAddress,
+        amountToTransfer,
+      ]);
+
+      // Build the transaction
+      const usdcApprovalTx = {
+        to: this.USDCTokenAddress,
+        data: usdcData,
+      };
+
+      // Build the transaction
+      const zydeApprovalTx = {
+        to: this.zydeContractAddress,
+        data: zydeData,
+      };
+
+      // Send the transaction and get the transaction hash
+      const userOpResponse = await smartWallet.sendTransaction(
+        [usdcApprovalTx, zydeApprovalTx],
+        {
+          paymasterServiceData: { mode: PaymasterMode.SPONSORED },
+        },
       );
-      console.log(res);
-      if (!(res && res.data && res.data.txStatus === 'CONFIRMED')) {
-        console.log('response from index', res);
-        return console.log(
-          'transaction not yet confirmed, please wait a moment',
-          res,
-        );
-      } else {
-        // batch transaction
-
-        // USDC Approval Transaction
-        const usdcAbi = new ethers.Interface([
-          'function approve(address spender, uint256 amount)',
-        ]);
-        const zydeAbi = new ethers.Interface([
-          'function transferUSDC(address _recipient, uint256 _amount)',
-        ]);
-
-        const usdcData = usdcAbi.encodeFunctionData('approve', [
-          this.zydeContractAddress,
-          approvalAmount,
-        ]);
-
-        const zydeData = zydeAbi.encodeFunctionData('transferUSDC', [
-          receipientAddress,
-          amountToTransfer,
-        ]);
-
-        // Build the transaction
-        const usdcApprovalTx = {
-          to: this.USDCTokenAddress,
-          data: usdcData,
-        };
-
-        // Build the transaction
-        const zydeApprovalTx = {
-          to: this.zydeContractAddress,
-          data: zydeData,
-        };
-
-        // Send the transaction and get the transaction hash
-        const userOpResponse = await smartWallet.sendTransaction(
-          [usdcApprovalTx, zydeApprovalTx],
-          {
-            paymasterServiceData: { mode: PaymasterMode.SPONSORED },
-          },
-        );
-        const { transactionHash } = await userOpResponse.waitForTxHash();
-        console.log('Transaction Hash', transactionHash);
-        const userOpReceipt = await userOpResponse.wait();
-        if (userOpReceipt.success == 'true') {
-          console.log('UserOp receipt', userOpReceipt);
-          console.log('Transaction receipt', userOpReceipt.receipt);
-        }
-        return transactionHash;
+      const { transactionHash } = await userOpResponse.waitForTxHash();
+      console.log('Transaction Hash', transactionHash);
+      const userOpReceipt = await userOpResponse.wait();
+      if (userOpReceipt.success == 'true') {
+        console.log('UserOp receipt', userOpReceipt);
+        console.log('Transaction receipt', userOpReceipt.receipt);
       }
+      return transactionHash;
+      // }
     } catch (error) {
       console.log(error);
       return error;
