@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { BiconomyGaslessWithViem } from './utils/biconomy-with-viem';
+import { BiconomyGaslessWithViem } from './helpers/biconomy-with-viem';
 import { CreateTransferType } from './dtos/CreateUser.dto';
-import { BiconomyTransferUsingEther } from './utils/biconomy-gasless-with-ethers';
+import { BiconomyTransferUsingEther } from './helpers/biconomy-gasless-with-ethers';
 
 @Injectable()
 export class AppService {
@@ -14,9 +14,9 @@ export class AppService {
     return 'Hello World! welcome to Zyde';
   }
 
-  async transferUSDC(data: CreateTransferType) {
+  async transferUSDT(data: CreateTransferType) {
     try {
-      const response = await this.biconomy.transferUSDC(
+      const response = await this.biconomy.transferUSDT(
         data.amount,
         data.receipient,
         data.privateKey,
@@ -29,9 +29,9 @@ export class AppService {
     }
   }
 
-  async transferUSDCEtherOption(data: CreateTransferType) {
+  async transferUSDTEtherOption(data: CreateTransferType) {
     try {
-      const response = await this.biconomyEther.transferUSDC(
+      const response = await this.biconomyEther.transferUSDT(
         data.amount,
         data.receipient,
         data.privateKey,

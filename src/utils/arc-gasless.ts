@@ -2,7 +2,6 @@ import { AarcCore } from '@aarc-xyz/core';
 import { ethers, Wallet } from 'ethers';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { Hex } from 'viem';
 
 @Injectable()
 export class AarcTransfer {
@@ -22,7 +21,7 @@ export class AarcTransfer {
     console.log('provider', provider);
 
     const PolygonUSDCTokenAddress =
-      '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // USDC Proxy address
+      '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'; // USDC Proxy address
 
     // Amount to transfer
     const transferAmount = amount;

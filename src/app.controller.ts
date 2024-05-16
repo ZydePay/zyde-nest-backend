@@ -1,9 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post
-} from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CreateTransferDto } from './dtos/CreateUser.dto';
 @Controller()
@@ -15,15 +10,15 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Post('/transferUSDC')
+  @Post('/transferUSDT')
   // @UsePipes(new ValidationPipe())
-  async transferUSDC(@Body() data: CreateTransferDto) {
-    return await this.appService.transferUSDC(data);
+  async transferUSDT(@Body() data: CreateTransferDto) {
+    return await this.appService.transferUSDT(data);
   }
 
-  @Post('/transferUSDCEtherOption')
+  @Post('/transferUSDTEtherOption')
   // @UsePipes(new ValidationPipe())
-  async transferUSDCEtherOption(@Body() data: CreateTransferDto) {
-    return await this.appService.transferUSDCEtherOption(data);
+  async transferUSDTEtherOption(@Body() data: CreateTransferDto) {
+    return await this.appService.transferUSDTEtherOption(data);
   }
 }
