@@ -48,7 +48,7 @@ export class BiconomyGaslessWithViem {
       });
 
       const saAddress = await smartWallet.getAccountAddress();
-      console.log('SA Address', saAddress);
+      console.log('Smart Account Address', saAddress);
       return { smartWallet, saAddress };
     } catch (error) {
       return error;
