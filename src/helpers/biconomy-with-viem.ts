@@ -74,7 +74,7 @@ export class BiconomyGaslessWithViem {
       const { smartWallet } = await this.createSmartAccount(privateKey);
       // batch transaction
 
-      // USDC Approval Transaction
+      // usdt Approval Transaction
       const erc20Abi = parseAbi([
         'function approve(address spender, uint256 amount)',
       ]);
@@ -82,7 +82,7 @@ export class BiconomyGaslessWithViem {
         'function transferERC20(address _recipient, uint256 _amount)',
       ]);
 
-      const usdcData = encodeFunctionData({
+      const usdtData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'approve',
         args: [this.zydeContractAddress as Hex, approvalAmount],
@@ -95,9 +95,9 @@ export class BiconomyGaslessWithViem {
       });
 
       // Build the transaction
-      const usdcApprovalTx = {
+      const usdtApprovalTx = {
         to: this.UsdtTokenAddress,
-        data: usdcData,
+        data: usdtData,
       };
 
       // Build the transaction
@@ -108,7 +108,7 @@ export class BiconomyGaslessWithViem {
 
       // Send the transaction and get the transaction hash
       const userOpResponse = await smartWallet.sendTransaction(
-        [usdcApprovalTx, zydeApprovalTx],
+        [usdtApprovalTx, zydeApprovalTx],
         {
           paymasterServiceData: { mode: PaymasterMode.SPONSORED },
         },
@@ -122,7 +122,7 @@ export class BiconomyGaslessWithViem {
       }
       return transactionHash;
     } catch (error) {
-      return error;
+      throw error.message;
     }
   };
 }

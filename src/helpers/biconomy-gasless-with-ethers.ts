@@ -67,15 +67,15 @@ export class BiconomyTransferUsingEther {
 
       // batch transaction
 
-      // USDC Approval Transaction
-      const usdcAbi = new ethers.Interface([
+      // usdt Approval Transaction
+      const usdtAbi = new ethers.Interface([
         'function approve(address spender, uint256 amount)',
       ]);
       const zydeAbi = new ethers.Interface([
         'function transferERC20(address _recipient, uint256 _amount)',
       ]);
 
-      const usdcData = usdcAbi.encodeFunctionData('approve', [
+      const usdtData = usdtAbi.encodeFunctionData('approve', [
         this.zydeContractAddress,
         approvalAmount,
       ]);
@@ -86,9 +86,9 @@ export class BiconomyTransferUsingEther {
       ]);
 
       // Build the transaction
-      const usdcApprovalTx = {
+      const usdtApprovalTx = {
         to: this.UsdtTokenAddress,
-        data: usdcData,
+        data: usdtData,
       };
 
       // Build the transaction
@@ -99,7 +99,7 @@ export class BiconomyTransferUsingEther {
 
       // Send the transaction and get the transaction hash
       const userOpResponse = await smartWallet.sendTransaction(
-        [usdcApprovalTx, zydeApprovalTx],
+        [usdtApprovalTx, zydeApprovalTx],
         {
           paymasterServiceData: { mode: PaymasterMode.SPONSORED },
         },
@@ -113,7 +113,7 @@ export class BiconomyTransferUsingEther {
       }
       return transactionHash;
     } catch (error) {
-      return error;
+      throw error;
     }
   };
 }

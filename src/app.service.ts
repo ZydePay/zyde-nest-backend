@@ -1,7 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { BiconomyGaslessWithViem } from './helpers/biconomy-with-viem';
 import { CreateTransferType } from './dtos/CreateUser.dto';
 import { BiconomyTransferUsingEther } from './helpers/biconomy-gasless-with-ethers';
+import { HttpRequestError } from 'viem';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class AppService {
@@ -23,9 +30,9 @@ export class AppService {
       );
       console.log(response);
       return { transactionHash: response };
-    } catch (err) {
-      console.log(err);
-      return { error: err };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -38,9 +45,9 @@ export class AppService {
       );
       console.log(response);
       return { transactionHash: response };
-    } catch (err) {
-      console.log(err);
-      return { error: err };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
